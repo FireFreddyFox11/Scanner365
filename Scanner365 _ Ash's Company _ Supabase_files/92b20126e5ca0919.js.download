@@ -1,0 +1,101 @@
+;!function(){try { var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof global?global:"undefined"!=typeof window?window:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&((e._debugIds|| (e._debugIds={}))[n]="0ee579b0-8140-a1e3-a367-1e5204ba206c")}catch(e){}}();
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,905266,e=>{"use strict";var s=e.i(478902);let a=(0,e.i(388019).default)("FileJson2",[["path",{d:"M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4",key:"1pf5j1"}],["path",{d:"M14 2v4a2 2 0 0 0 2 2h4",key:"tnqrlb"}],["path",{d:"M4 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1",key:"fq0c9t"}],["path",{d:"M8 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1",key:"4gibmv"}]]);var t=e.i(389959),o=e.i(500850),n=e.i(283606),r=e.i(314805),l=e.i(408279);e.s(["ConnectTabContent",0,({value:e,children:a})=>(0,s.jsx)(n.TabsContent_Shadcn_,{value:e,className:"p-3 mt-1 max-h-72 overflow-scroll",children:a}),"ConnectTabTrigger",0,({value:e})=>(0,s.jsxs)(l.TabsTrigger_Shadcn_,{value:e,className:"flex items-center gap-1 text-xs px-0 data-[state=active]:bg-transparent py-2.5",children:[(0,s.jsx)(a,{size:15,className:"text-foreground-muted"}),e]}),"ConnectTabTriggers",0,({children:e})=>(0,s.jsx)(r.TabsList_Shadcn_,{className:"bg-surface-100 px-5 rounded-lg rounded-b-none gap-5",children:e}),"ConnectTabs",0,({children:e,value:a,onValueChange:n})=>{let r=e[0],l=(0,t.isValidElement)(r)?r.props?.children[0]?.props?.value||"":null;return(0,s.jsx)(o.Tabs_Shadcn_,{defaultValue:l,value:a,onValueChange:n,children:e})}],905266)},983756,e=>{"use strict";var s=e.i(478902),a=e.i(905266),t=e.i(200243);e.s(["default",0,({projectKeys:e})=>(0,s.jsxs)(a.ConnectTabs,{children:[(0,s.jsxs)(a.ConnectTabTriggers,{children:[(0,s.jsx)(a.ConnectTabTrigger,{value:".env.local"}),(0,s.jsx)(a.ConnectTabTrigger,{value:"page.tsx"}),(0,s.jsx)(a.ConnectTabTrigger,{value:"utils/supabase/server.ts"}),(0,s.jsx)(a.ConnectTabTrigger,{value:"utils/supabase/client.ts"}),(0,s.jsx)(a.ConnectTabTrigger,{value:"utils/supabase/middleware.ts"})]}),(0,s.jsx)(a.ConnectTabContent,{value:".env.local",children:(0,s.jsx)(t.SimpleCodeBlock,{className:"bash",parentClassName:"min-h-72",children:["",`NEXT_PUBLIC_SUPABASE_URL=${e.apiUrl??"your-project-url"}`,e?.publishableKey?`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=${e.publishableKey}`:`NEXT_PUBLIC_SUPABASE_ANON_KEY=${e.anonKey??"your-anon-key"}`,""].join("\n")})}),(0,s.jsx)(a.ConnectTabContent,{value:"page.tsx",children:(0,s.jsx)(t.SimpleCodeBlock,{className:"tsx",parentClassName:"min-h-72",children:`
+import { createClient } from '@/utils/supabase/server'
+import { cookies } from 'next/headers'
+
+export default async function Page() {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+
+  const { data: todos } = await supabase.from('todos').select()
+
+  return (
+    <ul>
+      {todos?.map((todo) => (
+        <li>{todo}</li>
+      ))}
+    </ul>
+  )
+}
+`})}),(0,s.jsx)(a.ConnectTabContent,{value:"utils/supabase/server.ts",children:(0,s.jsx)(t.SimpleCodeBlock,{className:"ts",parentClassName:"min-h-72",children:`
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies } from "next/headers";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.${e?.publishableKey?"NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY":"NEXT_PUBLIC_SUPABASE_ANON_KEY"};
+
+export const createClient = (cookieStore: ReturnType<typeof cookies>) => {
+  return createServerClient(
+    supabaseUrl!,
+    supabaseKey!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+          } catch {
+            // The \`setAll\` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    },
+  );
+};
+`})}),(0,s.jsx)(a.ConnectTabContent,{value:"utils/supabase/client.ts",children:(0,s.jsx)(t.SimpleCodeBlock,{className:"ts",parentClassName:"min-h-72",children:`
+import { createBrowserClient } from "@supabase/ssr";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.${e?.publishableKey?"NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY":"NEXT_PUBLIC_SUPABASE_ANON_KEY"};
+
+export const createClient = () =>
+  createBrowserClient(
+    supabaseUrl!,
+    supabaseKey!,
+  );
+`})}),(0,s.jsx)(a.ConnectTabContent,{value:"utils/supabase/middleware.ts",children:(0,s.jsx)(t.SimpleCodeBlock,{className:"ts",parentClassName:"min-h-72",children:`
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { type NextRequest, NextResponse } from "next/server";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.${e?.publishableKey?"NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY":"NEXT_PUBLIC_SUPABASE_ANON_KEY"};
+
+export const createClient = (request: NextRequest) => {
+  // Create an unmodified response
+  let supabaseResponse = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
+  const supabase = createServerClient(
+    supabaseUrl!,
+    supabaseKey!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
+    },
+  );
+
+  return supabaseResponse
+};
+`})})]})])}]);
+
+//# debugId=0ee579b0-8140-a1e3-a367-1e5204ba206c
+//# sourceMappingURL=86b9f08b121331c0.js.map

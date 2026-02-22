@@ -1,0 +1,40 @@
+;!function(){try { var e="undefined"!=typeof globalThis?globalThis:"undefined"!=typeof global?global:"undefined"!=typeof window?window:"undefined"!=typeof self?self:{},n=(new e.Error).stack;n&&((e._debugIds|| (e._debugIds={}))[n]="2a0c018b-c4a8-e460-04a4-83e56122eab5")}catch(e){}}();
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,905266,e=>{"use strict";var a=e.i(478902);let s=(0,e.i(388019).default)("FileJson2",[["path",{d:"M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4",key:"1pf5j1"}],["path",{d:"M14 2v4a2 2 0 0 0 2 2h4",key:"tnqrlb"}],["path",{d:"M4 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1",key:"fq0c9t"}],["path",{d:"M8 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1",key:"4gibmv"}]]);var t=e.i(389959),n=e.i(500850),o=e.i(283606),l=e.i(314805),r=e.i(408279);e.s(["ConnectTabContent",0,({value:e,children:s})=>(0,a.jsx)(o.TabsContent_Shadcn_,{value:e,className:"p-3 mt-1 max-h-72 overflow-scroll",children:s}),"ConnectTabTrigger",0,({value:e})=>(0,a.jsxs)(r.TabsTrigger_Shadcn_,{value:e,className:"flex items-center gap-1 text-xs px-0 data-[state=active]:bg-transparent py-2.5",children:[(0,a.jsx)(s,{size:15,className:"text-foreground-muted"}),e]}),"ConnectTabTriggers",0,({children:e})=>(0,a.jsx)(l.TabsList_Shadcn_,{className:"bg-surface-100 px-5 rounded-lg rounded-b-none gap-5",children:e}),"ConnectTabs",0,({children:e,value:s,onValueChange:o})=>{let l=e[0],r=(0,t.isValidElement)(l)?l.props?.children[0]?.props?.value||"":null;return(0,a.jsx)(n.Tabs_Shadcn_,{defaultValue:r,value:s,onValueChange:o,children:e})}],905266)},7346,e=>{"use strict";var a=e.i(478902),s=e.i(905266),t=e.i(200243);e.s(["default",0,({projectKeys:e})=>(0,a.jsxs)(s.ConnectTabs,{children:[(0,a.jsxs)(s.ConnectTabTriggers,{children:[(0,a.jsx)(s.ConnectTabTrigger,{value:".env.local"}),(0,a.jsx)(s.ConnectTabTrigger,{value:"utils/supabase.ts"}),(0,a.jsx)(s.ConnectTabTrigger,{value:"App.tsx"})]}),(0,a.jsx)(s.ConnectTabContent,{value:".env.local",children:(0,a.jsx)(t.SimpleCodeBlock,{className:"bash",parentClassName:"min-h-72",children:["",`REACT_APP_SUPABASE_URL=${e.apiUrl??"your-project-url"}`,e?.publishableKey?`REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY=${e.publishableKey}`:`REACT_APP_SUPABASE_ANON_KEY=${e.anonKey??"your-anon-key"}`,""].join("\n")})}),(0,a.jsx)(s.ConnectTabContent,{value:"utils/supabase.ts",children:(0,a.jsx)(t.SimpleCodeBlock,{className:"ts",parentClassName:"min-h-72",children:`
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+const supabaseKey = process.env.${e.publishableKey?"REACT_APP_SUPABASE_PUBLISHABLE_DEFAULT_KEY":"REACT_APP_SUPABASE_ANON_KEY"};
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
+        `})}),(0,a.jsx)(s.ConnectTabContent,{value:"App.tsx",children:(0,a.jsx)(t.SimpleCodeBlock,{className:"tsx",parentClassName:"min-h-72",children:`
+import { useState, useEffect } from 'react'
+import { supabase } from '../utils/supabase'
+
+function Page() {
+  const [todos, setTodos] = useState([])
+
+  useEffect(() => {
+    function getTodos() {
+      const { data: todos } = await supabase.from('todos').select()
+
+      if (todos.length > 1) {
+        setTodos(todos)
+      }
+    }
+
+    getTodos()
+  }, [])
+
+  return (
+    <div>
+      {todos.map((todo) => (
+        <li key={todo}>{todo}</li>
+      ))}
+    </div>
+  )
+}
+export default Page
+`})})]})])}]);
+
+//# debugId=2a0c018b-c4a8-e460-04a4-83e56122eab5
+//# sourceMappingURL=aeedac5d3689c47b.js.map
