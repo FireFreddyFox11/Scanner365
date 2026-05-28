@@ -1,4 +1,5 @@
 {
     "editor.suggest.selectionMode": "never",
-    "cmake.sourceDirectory": "C:/Users/Quantumiser101/Documents/VSC_P/PersonalProjects/Touch365 Scanner/touch365_scanner/linux"
+    "cmake.sourceDirectory": "C:/Users/Quantumiser101/Documents/VSC_P/PersonalProjects/Touch365 Scanner/touch365_scanner/linux",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
