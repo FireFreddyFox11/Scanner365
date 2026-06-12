@@ -235,25 +235,18 @@ class MainAppState extends ChangeNotifier {
     String binNumber,
   ) async {
     final String sanitizedResult = result.trim().toUpperCase();
-    final int existingIndex = fileStorage.indexWhere(
-      (item) => item.barcode.trim().toUpperCase() == sanitizedResult,
+    //final int existingIndex = fileStorage.indexWhere((item) => item.barcode.trim().toUpperCase() == sanitizedResult,);
+
+    i++;
+    fileStorage.add(
+      BarcodeFile(
+        id: i,
+        barcode: sanitizedResult,
+        quantity: quantity,
+        binNumber: binNumber,
+      ),
     );
-    if (existingIndex != -1) {
-      fileStorage[existingIndex].quantity += quantity;
-      if (binNumber.isNotEmpty) {
-        fileStorage[existingIndex].binNumber = binNumber;
-      }
-    } else {
-      i++;
-      fileStorage.add(
-        BarcodeFile(
-          id: i,
-          barcode: sanitizedResult,
-          quantity: quantity,
-          binNumber: binNumber,
-        ),
-      );
-    }
+
     await saveFSToDisk();
     notifyListeners();
   }

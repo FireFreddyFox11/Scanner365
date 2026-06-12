@@ -379,7 +379,7 @@ class _MyHomePageState extends State<HomePage> with WidgetsBindingObserver {
   Future<void> pickFile() async {
     FilePickerResult? fpr = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['png', 'jpg', 'jpeg'],
+      allowedExtensions: ['png', 'jpg', 'jpeg', 'heic', 'webp'],
     );
     if (fpr == null || fpr.files.first.path == null) return;
     String filePath = fpr.files.first.path!;
