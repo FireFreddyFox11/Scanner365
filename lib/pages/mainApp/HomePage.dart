@@ -386,6 +386,8 @@ class _MyHomePageState extends State<HomePage> with WidgetsBindingObserver {
       final XFile? mediaFile = await picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 100, // Keeps the resolution crisp for barcode parsing
+        maxWidth: 4000,
+        maxHeight: 4000
       );
 
       // If the user backs out of the gallery, stop looping
