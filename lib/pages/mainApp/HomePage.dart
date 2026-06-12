@@ -8,6 +8,7 @@ import 'package:touch365_scanner/main.dart';
 import 'package:touch365_scanner/pages/mainApp/HistoryPage.dart';
 import 'package:touch365_scanner/pages/mainApp/TempWelcomePage.dart';
 import 'package:touch365_scanner/components/Buttons.dart';
+import 'package:image_picker/image_picker.dart';
 
 // ─── Scanner Dialog Widget ────────────────────────────────────────────────────
 
@@ -376,49 +377,77 @@ class _MyHomePageState extends State<HomePage> with WidgetsBindingObserver {
     return result ?? false;
   }
 
-  Future<void> pickFile() async {
-    FilePickerResult? fpr = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['png', 'jpg', 'jpeg', 'heic', 'webp'],
-    );
-    if (fpr == null || fpr.files.first.path == null) return;
-    String filePath = fpr.files.first.path!;
-    final MobileScannerController controller = MobileScannerController(
-      formats: appState.activeFormats,
-    );
+  Future<void> pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    bool shouldPickAgain = true;
 
-    try {
-      final BarcodeCapture? capture = await controller.analyzeImage(filePath);
-      if (capture != null && capture.barcodes.isNotEmpty) {
-        final String? res = capture.barcodes.first.displayValue?.trim();
-        if (res != null) {
-          HapticFeedback.lightImpact();
-          bool isCorrect = await showVerificationDialog(res);
-          if (isCorrect) {
-            double? q = await showQuantityField();
-            String? b = '';
-            if (appState.binEnabled) b = await showBinField();
-            handleScanResult(res, q, b);
-            onItemTapped(1);
-          } else {
-            // 3. If incorrect, notify the user and let them click scan again naturally
-            // ignore: use_build_context_synchronously
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Scan discarded. Please try rescanning.'),
-                duration: Duration(seconds: 2),
-                backgroundColor: Colors.orange,
-              ),
-            );
-          }
-        }
-      } else {
-        debugPrint("No barcodes detected in the selected image.");
+    while (shouldPickAgain) {
+      // 🎯 Take them straight to the native photo gallery view
+      final XFile? mediaFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 100, // Keeps the resolution crisp for barcode parsing
+      );
+
+      // If the user backs out of the gallery, stop looping
+      if (mediaFile == null) {
+        shouldPickAgain = false;
+        return;
       }
-    } catch (e) {
-      debugPrint("MobileScanner file analysis error: $e");
-    } finally {
-      controller.dispose();
+
+      final String filePath = mediaFile.path;
+      final MobileScannerController controller = MobileScannerController(
+        formats: appState.activeFormats,
+      );
+
+      try {
+        final BarcodeCapture? capture = await controller.analyzeImage(filePath);
+
+        if (capture != null && capture.barcodes.isNotEmpty) {
+          final String? res = capture.barcodes.first.displayValue?.trim();
+
+          if (res != null) {
+            HapticFeedback.lightImpact();
+
+            // ignore: use_build_context_synchronously
+            bool isCorrect = await showVerificationDialog(res);
+
+            if (isCorrect) {
+              shouldPickAgain = false; // Break the loop!
+
+              double? q = await showQuantityField();
+              String? b = '';
+              if (appState.binEnabled) b = await showBinField();
+
+              handleScanResult(res, q, b);
+              onItemTapped(1);
+            } else {
+              // ignore: use_build_context_synchronously
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Scan discarded. Reopening gallery...'),
+                  duration: Duration(milliseconds: 1500),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            }
+          }
+        } else {
+          // ignore: use_build_context_synchronously
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'No barcode detected. Please select a clearer image.',
+              ),
+              duration: Duration(seconds: 3),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint("MobileScanner file analysis error: $e");
+      } finally {
+        controller.dispose();
+      }
     }
   }
 
@@ -509,7 +538,7 @@ class _MyHomePageState extends State<HomePage> with WidgetsBindingObserver {
                   children: [
                     SingleChildScrollView(
                       child: VertIconButton(
-                        onPressed: () => pickFile(),
+                        onPressed: () => pickImage(),
                         dIcon: Icons.storage,
                         text: "Media",
                         color: Colors.white,
