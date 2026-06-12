@@ -40,6 +40,9 @@ class _ScannerDialogState extends State<_ScannerDialog>
       formats: widget.appState.activeFormats,
       facing: CameraFacing.back,
       torchEnabled: widget.appState.switchedOn,
+      cameraResolution: const Size(1920, 1080),
+      autoZoom: true,
+      returnImage: true,
     );
 
     _scanAnimController = AnimationController(
@@ -93,7 +96,8 @@ class _ScannerDialogState extends State<_ScannerDialog>
                         }
                         setState(() {});
 
-                        if (confidenceScore >= widget.appState.thresholdValue && !isClosing) {
+                        if (confidenceScore >= widget.appState.thresholdValue &&
+                            !isClosing) {
                           isClosing = true;
                           HapticFeedback.lightImpact();
                           Navigator.pop(context, currValue);
@@ -151,7 +155,8 @@ class _ScannerDialogState extends State<_ScannerDialog>
                         ),
                         const SizedBox(height: 4),
                         LinearProgressIndicator(
-                          value: confidenceScore / widget.appState.thresholdValue,
+                          value:
+                              confidenceScore / widget.appState.thresholdValue,
                           backgroundColor: Colors.white24,
                           valueColor: const AlwaysStoppedAnimation(
                             Colors.cyanAccent,
@@ -253,6 +258,10 @@ class _MyHomePageState extends State<HomePage> with WidgetsBindingObserver {
     return value ?? '';
   }
 
+  bool isCorrectBarcode() {
+    return false;
+  }
+
   Future<double> showQuantityField() async {
     double? value = await showDialog<double>(
       context: context,
@@ -299,7 +308,72 @@ class _MyHomePageState extends State<HomePage> with WidgetsBindingObserver {
       latestScanResult = result;
       selectedIndex = 1;
     });
-    appState.addToFile(result, quantity, binNumber);
+    await appState.addToFile(result, quantity, binNumber);
+  }
+
+  Future<bool> showVerificationDialog(String scannedValue) async {
+    bool? result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // Force them to explicitly confirm or reject
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.assignment_turned_in, color: Colors.green),
+              SizedBox(width: 8),
+              Text("Verify Scan Result"),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Detected Code:",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                width: double.maxFinite,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Text(
+                  scannedValue,
+                  style: const TextStyle(fontSize: 18, letterSpacing: 1.2),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text("Is this value correct?"),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text(
+                "No, Rescan",
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () => Navigator.pop(context, false),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              child: const Text(
+                "Yes, Correct",
+                style: TextStyle(color: Colors.white),
+              ),
+              onPressed: () => Navigator.pop(context, true),
+            ),
+          ],
+        );
+      },
+    );
+    return result ?? false;
   }
 
   Future<void> pickFile() async {
@@ -319,11 +393,24 @@ class _MyHomePageState extends State<HomePage> with WidgetsBindingObserver {
         final String? res = capture.barcodes.first.displayValue?.trim();
         if (res != null) {
           HapticFeedback.lightImpact();
-          double? q = await showQuantityField();
-          String? b = '';
-          if (appState.binEnabled) b = await showBinField();
-          handleScanResult(res, q, b);
-          onItemTapped(1);
+          bool isCorrect = await showVerificationDialog(res);
+          if (isCorrect) {
+            double? q = await showQuantityField();
+            String? b = '';
+            if (appState.binEnabled) b = await showBinField();
+            handleScanResult(res, q, b);
+            onItemTapped(1);
+          } else {
+            // 3. If incorrect, notify the user and let them click scan again naturally
+            // ignore: use_build_context_synchronously
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Scan discarded. Please try rescanning.'),
+                duration: Duration(seconds: 2),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
         }
       } else {
         debugPrint("No barcodes detected in the selected image.");
@@ -370,7 +457,6 @@ class _MyHomePageState extends State<HomePage> with WidgetsBindingObserver {
       const TempWelcomePage(),
       const HistoryPage(),
     ];
-
     return Scaffold(
       body: Builder(
         builder: (context) {
@@ -447,13 +533,32 @@ class _MyHomePageState extends State<HomePage> with WidgetsBindingObserver {
                 width: 210.0,
                 child: FloatingActionButton(
                   onPressed: () async {
-                    String? scannedResult = await scanBarcode(context);
-                    if (scannedResult != null) {
-                      handleScanResult(
+                    bool shouldScanAgain = true;
+
+                    while (shouldScanAgain) {
+                      // 1. Open the camera dialog view
+                      // ignore: use_build_context_synchronously
+                      String? scannedResult = await scanBarcode(context);
+
+                      // If the user hits 'Cancel' or backs out, exit the loop entirely
+                      if (scannedResult == null) {
+                        shouldScanAgain = false;
+                        break;
+                      }
+
+                      // 2. Intercept with the verification gate immediately
+                      bool isCorrect = await showVerificationDialog(
                         scannedResult,
-                        await showQuantityField(),
-                        appState.binEnabled ? await showBinField() : '',
                       );
+
+                      if (isCorrect) {
+                        shouldScanAgain = false;
+                        double? q = await showQuantityField();
+                        String b = '';
+                        if (appState.binEnabled) b = await showBinField();
+
+                        handleScanResult(scannedResult, q, b);
+                      }
                     }
                   },
                   backgroundColor: Colors.black,

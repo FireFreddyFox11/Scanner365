@@ -38,7 +38,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider<MainAppState>.value(value: mainAppState),
-    ],
+      ],
       child: const MainApp(),
     ),
   );
@@ -47,9 +47,9 @@ Future<void> main() async {
 //Used to store and use information about the product's barcode and the quantity of the product
 class BarcodeFile {
   int id;
-  final String barcode;
+  String barcode;
   double quantity;
-  final String binNumber;
+  String binNumber;
   BarcodeFile({
     required this.id,
     required this.barcode,
@@ -114,19 +114,6 @@ class MainAppState extends ChangeNotifier {
   late String t = DateFormat('hh:mm:ss').format(now);
   int i = 0;
   int iM = 0;
-  void addToFile(String result, double quantity, String binNumber) {
-    i++;
-    fileStorage.add(
-      BarcodeFile(
-        id: i,
-        barcode: result,
-        quantity: quantity,
-        binNumber: binNumber,
-      ),
-    );
-    saveToDisk();
-    notifyListeners();
-  }
 
   int thresholdValue = 0;
   DetectionSpeed dSpeed = DetectionSpeed.normal;
@@ -140,7 +127,7 @@ class MainAppState extends ChangeNotifier {
   bool _ean8Enabled = true;
   bool _upcAEnabled = true;
   bool _upcEEnabled = true;
-  
+
   bool get binEnabled => _binEnabled;
   bool get switchedOn => _isSwitchedOn;
   bool get code128Enabled => _code128Enabled;
@@ -157,13 +144,13 @@ class MainAppState extends ChangeNotifier {
   }
 
   List<BarcodeFormat> get activeFormats => formatMap.entries
-        .where((entry) => entry.value == true)
-        .map((entry) => entry.key)
-        .toList();
+      .where((entry) => entry.value == true)
+      .map((entry) => entry.key)
+      .toList();
 
   void updateFormatMap(bool value, BarcodeFormat format) {
     formatMap[format] = value;
-    notifyListeners();   
+    notifyListeners();
   }
 
   void toggleACode128() {
@@ -195,6 +182,7 @@ class MainAppState extends ChangeNotifier {
     _upcAEnabled = !_upcAEnabled;
     updateFormatMap(_upcAEnabled, BarcodeFormat.upcA);
   }
+
   void toggleAUpcE() {
     _upcEEnabled = !_upcEEnabled;
     updateFormatMap(_upcEEnabled, BarcodeFormat.upcE);
@@ -239,6 +227,35 @@ class MainAppState extends ChangeNotifier {
     await openFile.close();
 
     return f;
+  }
+
+  Future<void> addToFile(
+    String result,
+    double quantity,
+    String binNumber,
+  ) async {
+    final String sanitizedResult = result.trim().toUpperCase();
+    final int existingIndex = fileStorage.indexWhere(
+      (item) => item.barcode.trim().toUpperCase() == sanitizedResult,
+    );
+    if (existingIndex != -1) {
+      fileStorage[existingIndex].quantity += quantity;
+      if (binNumber.isNotEmpty) {
+        fileStorage[existingIndex].binNumber = binNumber;
+      }
+    } else {
+      i++;
+      fileStorage.add(
+        BarcodeFile(
+          id: i,
+          barcode: sanitizedResult,
+          quantity: quantity,
+          binNumber: binNumber,
+        ),
+      );
+    }
+    await saveFSToDisk();
+    notifyListeners();
   }
 
   Future<bool> shareInfo(List<BarcodeFile> storage, int deciFix) async {

@@ -16,9 +16,6 @@ class _SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<MainAppState>();
-    final TextEditingController thresholdController = TextEditingController(
-      text: appState.thresholdValue.toString(),
-    );
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
