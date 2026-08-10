@@ -184,8 +184,8 @@ class _HistoryPage extends State<HistoryPage> {
             ],
           ),
           DraggableScrollableSheet(
-            initialChildSize: 0.1,
-            minChildSize: 0.1,
+            initialChildSize: 0.2,
+            minChildSize: 0.2,
             maxChildSize: 0.4,
             builder: (context, scrollController) {
               return Container(
@@ -203,10 +203,16 @@ class _HistoryPage extends State<HistoryPage> {
                         "Options",
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      SafeArea(
-                        top: false,
+                      Padding(
+                        // Adds system bottom gesture bar height dynamically
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).padding.bottom + 8.0,
+                        ),
                         child: Card(
-                          margin: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           color: Colors.grey[100],
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
@@ -215,6 +221,8 @@ class _HistoryPage extends State<HistoryPage> {
                           child: Padding(
                             padding: const EdgeInsets.all(10),
                             child: Column(
+                              mainAxisSize: MainAxisSize
+                                  .min, // Prevents Column from expanding infinitely
                               children: [
                                 Row(
                                   children: [
@@ -232,7 +240,7 @@ class _HistoryPage extends State<HistoryPage> {
                                         Colors.green,
                                       ),
                                     ),
-                                    SizedBox(width: 10),
+                                    const SizedBox(width: 10),
                                     Expanded(
                                       child: buildButton(
                                         () async {
@@ -243,7 +251,6 @@ class _HistoryPage extends State<HistoryPage> {
                                               );
                                           if (result && mounted) {
                                             ScaffoldMessenger.of(
-                                              // ignore: use_build_context_synchronously
                                               context,
                                             ).showSnackBar(
                                               const SnackBar(
@@ -266,6 +273,7 @@ class _HistoryPage extends State<HistoryPage> {
                                     ),
                                   ],
                                 ),
+                                const SizedBox(height: 8),
                                 Row(
                                   children: [
                                     Expanded(
@@ -326,6 +334,7 @@ class _HistoryPage extends State<HistoryPage> {
                                     ),
                                   ],
                                 ),
+                                const SizedBox(height: 8),
                                 Row(
                                   children: [
                                     Expanded(
@@ -335,10 +344,14 @@ class _HistoryPage extends State<HistoryPage> {
                                               () => Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
-                                                  builder: (_) => Settings(),
+                                                  builder: (_) =>
+                                                      const Settings(),
                                                 ),
                                               ),
-                                              Icon(null),
+                                              const Icon(
+                                                Icons.settings,
+                                                color: Colors.white,
+                                              ), // Fixed Icon(null)
                                               const Text(
                                                 "Settings",
                                                 style: TextStyle(
